@@ -5,6 +5,8 @@ import struct
 import binascii
 import hashlib
 
+datalen = 0
+
 event_types = {
     0x00000000:"preboot_cert",
     0x00000001:"post_code",
@@ -63,7 +65,7 @@ class TCPAEvent:
             binascii.hexlify(self.pcr_value).decode(),
             self.event_size,
             self.valid,
-            self.event_data[:30])
+            self.event_data[:datalen])
 
 
 class TCPAParser(struct.Struct):
@@ -119,10 +121,18 @@ if __name__ == "__main__":
                         metavar=("ID", "SHA1HASH"),
                         dest="replacelist",
                         help="Replace event ID pcr_value with SHA1HASH. Could be used multiple times.")
+    parser.add_argument("-l",
+                        default=30,
+                        metavar="length",
+                        type=int,
+                        dest="datalen",
+                        help="Length of data to display. Defaults to 30. -1 means all.")
     args = parser.parse_args()
 
     tcpa_data = list()
     pcrs = list()
+
+    datalen = args.datalen
 
     for p in range(24):
         pcrs.append(PCR(p))
